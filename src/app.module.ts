@@ -8,6 +8,7 @@ import { BooksModule } from './modules/books/books.module';
 import { ServiceModule } from './modules/service/service.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { OrderModule } from './modules/order/order.module';
+import { CourseModule } from './modules/course/course.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { OrderModule } from './modules/order/order.module';
     BooksModule,
     ServiceModule,
     AppointmentModule,
-    OrderModule
+    OrderModule,
+    CourseModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,8 +1,8 @@
 {
-  "name": "backed-digital",
-  "version": "0.0.1",
+  "name": "backed-nadi",
+  "version": "1.0.1",
   "description": "",
-  "author": "",
+  "author": "Gulshan yadav",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -29,6 +29,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.1.11",
     "@nestjs/platform-fastify": "^11.1.11",
+    "@prisma/client": "^7.2.0",
     "fastify": "^5.6.2",
     "nestjs-zod": "^5.1.0",
     "reflect-metadata": "^0.2.2",
@@ -51,6 +52,7 @@
     "globals": "^17.0.0",
     "jest": "^30.2.0",
     "prettier": "^3.7.4",
+    "prisma": "^7.2.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",

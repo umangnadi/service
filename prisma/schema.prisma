@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------
+// User & Authentication
+// -----------------------
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  role      String   @default("user") // "user", "student", "admin"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authAccounts AuthAccount[]
+  student      Student?       // only if enrolled
+  orders       Order[]
+  appointments Appointment[]
+}
+
+model AuthAccount {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  provider       String   // "google", "facebook", etc.
+  providerUserId String   // unique user ID from provider
+  accessToken    String?
+  refreshToken   String?
+  expiresAt      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+}
+
+// -----------------------
+// Students & Enrollments
+// -----------------------
+model Student {
+  id        Int      @id @default(autoincrement())
+  studentId String   @unique
+  userId    Int      @unique
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  imageUrl   String?
+  tag        String?
+  title       String
+  description String
+  duration    String?
+  price       Float?
+  syllabus    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  courseId  Int
+  enrolledAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+}
+
+// -----------------------
+// Services
+// -----------------------
+model Service {
+  id          Int      @id @default(autoincrement())
+  tag        String?
+  imageUrl   String?
+  title        String
+  description String
+  price       Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments Appointment[]
+}
+
+// -----------------------
+// Books
+// -----------------------
+model Book {
+  id          Int      @id @default(autoincrement())
+  title       String
+  imageUrl   String?
+  description String
+  fileUrl     String
+  category    String?
+  author      String?
+  shippingInfo String?
+  price       Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// -----------------------
+// Orders (any purchase)
+// -----------------------
+model Order {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  totalAmount   Float
+  status        String   @default("pending") // pending, completed, canceled
+  paymentMethod String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  productType String   // "course", "service", "book"
+  productId   Int      // id of the purchased item
+  price       Float
+  quantity    Int      @default(1)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([productType, productId])
+}
+
+// -----------------------
+// Appointments
+// -----------------------
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  serviceId   Int
+  scheduledAt DateTime
+  status      String   @default("pending") // pending, confirmed, completed
+  createdAt   DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------
+// Contact Inquiries
+// -----------------------
+model Inquiry {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String?
+  phone     String?
+  message   String
+  createdAt DateTime @default(now())
+}
+
+// -----------------------
+// Newsletter Subscribers
+// -----------------------
+model Newsletter {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  subscribedAt DateTime @default(now())
+}

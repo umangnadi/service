@@ -9,20 +9,29 @@ datasource db {
 // -----------------------
 // User & Authentication
 // -----------------------
+enum UserRole {
+  user
+  student
+  admin
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String?
   avatar    String?
-  role      String   @default("user") // "user", "student", "admin"
+  role      UserRole @default(user)
+  password  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   authAccounts AuthAccount[]
-  student      Student?       // only if enrolled
+  student      Student?
   orders       Order[]
   appointments Appointment[]
 }
+
+
 
 model AuthAccount {
   id             Int      @id @default(autoincrement())

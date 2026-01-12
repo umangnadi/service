@@ -11,6 +11,6 @@ export class AuthController {
     @Body('username') username: string,
     @Body('password') password: string,
   ) {
-    return this.authService.validateUser(username, password);
+    return this.authService.validateAdmin(username, password);
   }
 }

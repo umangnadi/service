@@ -8,8 +8,8 @@ import { ServiceModule } from './modules/service/service.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { OrderModule } from './modules/order/order.module';
 import { CourseModule } from './modules/course/course.module';
-import { PrismaModule } from 'prisma/prisma.module';
 import { BookModule } from './modules/books/books.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [

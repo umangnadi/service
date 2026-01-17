@@ -1,58 +1,69 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Param,
-  Body,
-  ParseIntPipe,
-} from '@nestjs/common';
-
+import { Controller, Get, Post, Patch, Delete, Param, Body, ParseIntPipe, UseGuards, Req, Version } from '@nestjs/common';
 import { CourseService } from './course.service';
-
-// 👇 TYPE-ONLY imports (IMPORTANT)
-import type { CreateCourseDto } from './dto/create-course.dto';
-import type { UpdateCourseDto } from './dto/update-course.dto';
-
-// 👇 Zod schemas (runtime)
 import { CreateCourseSchema } from './dto/create-course.dto';
 import { UpdateCourseSchema } from './dto/update-course.dto';
-
-import { ZodValidationPipe } from 'nestjs-zod';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorator/roles.decorator';
+import type { FastifyRequest } from 'fastify';
 
 @Controller('courses')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
   @Post('/create-course')
-  create(
-    @Body(new ZodValidationPipe(CreateCourseSchema))
-    createCourseDto: CreateCourseDto,
-  ) {
-    return this.courseService.create(createCourseDto);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async create(@Req() req: FastifyRequest) {
+    const body = req.body as Record<string, any>;
+    const title = body.title?.value || '';
+    const description = body.description?.value || '';
+    const price = Number(body.price?.value || 0);
+    const syllabus = body.syllabus?.value || '';
+    const duration = body.duration?.value || '';
+    const tag = body.tag?.value || '';
+    const validatedData = CreateCourseSchema.parse({
+      title,
+      description,
+      price,
+      syllabus,
+      duration,
+      tag,
+    });
+
+    return this.courseService.create(validatedData, body.image);
   }
 
-  @Get('/get')
-  findAll() {
+  // Get all courses 
+  @Get("/get-all-courses") findAll() {
     return this.courseService.findAll();
   }
-
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  @Get(':id') findOne(@Param('id', ParseIntPipe) id: number) {
     return this.courseService.findOne(id);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body(new ZodValidationPipe(UpdateCourseSchema))
-    updateCourseDto: UpdateCourseDto,
-  ) {
-    return this.courseService.update(id, updateCourseDto);
+  @Post(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async update(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    const body = req.body;
+    const image = body.image;
+
+    const validatedData = UpdateCourseSchema.parse({
+      title: body.title?.value,
+      description: body.description?.value,
+      price: Number(body.price?.value),
+      syllabus: body.syllabus?.value,
+      duration: body.duration?.value,
+      tag: body.tag?.value,
+    });
+
+    return this.courseService.update(id, validatedData, image);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.courseService.remove(id);
   }

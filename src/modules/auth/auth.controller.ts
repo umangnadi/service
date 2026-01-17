@@ -7,10 +7,7 @@ export class AuthController {
 
   @Post('login')
   @Version('1')
-  login(
-    @Body('username') username: string,
-    @Body('password') password: string,
-  ) {
-    return this.authService.validateAdmin(username, password);
+  login(@Body('email') email: string, @Body('password') password: string) {
+    return this.authService.validateAdmin(email, password);
   }
 }

@@ -1,0 +1,10 @@
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
+
+export const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async () => ({
+    folder: 'courses',
+    resource_type: 'auto',
+  }),
+});

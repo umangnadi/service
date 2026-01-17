@@ -1,26 +1,48 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async validateAdmin(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user || user.role !== 'admin') throw new UnauthorizedException('Invalid credentials');
-    if (!user.password) throw new UnauthorizedException('Invalid credentials');
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
-    return user;
-  }
+    const admin = await this.prisma.user.findUnique({
+      where: { email },
+    });
 
-  async login(email: string, password: string) {
-    const user = await this.validateAdmin(email, password);
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    if (!admin || admin.role !== 'admin' || !admin.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, admin.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload = {
+      sub: admin.id,
+      role: admin.role,
+      email: admin.email,
+    };
+
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, {
+        expiresIn: '15m',
+      }),
+      refreshToken: this.jwtService.sign(payload, {
+        expiresIn: '7d',
+      }),
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
+      },
     };
   }
 }

@@ -3,10 +3,10 @@ import { z } from 'zod';
 export const CreateCourseSchema = z.object({
   imageUrl: z.string().url().optional(),
   tag: z.string().optional(),
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
+  title: z.string().min(1),
+  description: z.string().min(1),
   duration: z.string().optional(),
-  price: z.number().nonnegative().optional(),
+  price: z.number().positive().optional(),
   syllabus: z.string().optional(),
 });
 

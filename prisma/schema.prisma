@@ -139,14 +139,18 @@ model OrderItem {
   id          Int      @id @default(autoincrement())
   orderId     Int
   productType String   // "course", "service", "book"
-  productId   Int      // id of the purchased item
+  productId   Int      // Course.id, Service.id, Book.id
   price       Float
   quantity    Int      @default(1)
-
+  
+  //  ADD THIS LINE ONLY
+  metadata    Json?    // Birth details, form data, etc.
+  
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
+  
   @@index([productType, productId])
 }
+
 
 // -----------------------
 // Appointments

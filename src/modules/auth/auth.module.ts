@@ -5,10 +5,11 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
+import { MailModule } from 'src/common/nodemailer/mail.module';
 
 @Module({
   imports: [
-    PrismaModule,
+    PrismaModule, MailModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

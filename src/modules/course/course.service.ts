@@ -80,13 +80,13 @@ export class CourseService {
       imageUrl = uploaded.secure_url;
     }
 
-    return this.prisma.course.update({
+    return apiResponse(200, 'Course updated successfully', await this.prisma.course.update({
       where: { id },
       data: {
         ...dto,
         ...(imageUrl && { imageUrl }),
       },
-    });
+    }));
   }
 
   /**

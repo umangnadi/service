@@ -5,27 +5,39 @@ import {
   Patch,
   Delete,
   Param,
-  Body,
   ParseIntPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ServiceService } from './service.service';
-
-import type { UpdateServiceDto } from './dto/update-service.dto';
-import type { CreateServiceDto } from './dto/create-service.dto';
-import { CreateServiceSchema} from './dto/create-service.dto';
+import { CreateServiceSchema } from './dto/create-service.dto';
 import { UpdateServiceSchema } from './dto/update-service.dto';
-import { ZodValidationPipe } from 'nestjs-zod';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorator/roles.decorator';
+import type { FastifyRequest } from 'fastify';
 
-@Controller('services')
+@Controller('services')  
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
   @Post('/create-service')
-  create(@Body(new ZodValidationPipe(CreateServiceSchema)) createServiceDto: CreateServiceDto) {
-    return this.serviceService.create(createServiceDto);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async create(@Req() req: FastifyRequest) {  // ← FormData pattern
+    const body = req.body as Record<string, any>;
+    
+    const validatedData = CreateServiceSchema.parse({
+      title: body.title?.value || '',
+      description: body.description?.value || '',
+      price: Number(body.price?.value || 0),
+      tag: body.tag?.value || '',
+    });
+
+    return this.serviceService.create(validatedData, body.image);  // ← Pass image
   }
 
-  @Get()
+  @Get('/get-all-services')
   findAll() {
     return this.serviceService.findAll();
   }
@@ -35,14 +47,25 @@ export class ServiceController {
     return this.serviceService.findOne(id);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body(new ZodValidationPipe(UpdateServiceSchema)) updateServiceDto: UpdateServiceDto,
-  ) {
-    return this.serviceService.update(id, updateServiceDto);
+  @Post(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async update(@Param('id', ParseIntPipe) id: number, @Req() req: any) {  // ← FormData pattern
+    const body = req.body;
+    const image = body.image;
+
+    const validatedData = UpdateServiceSchema.parse({
+      title: body.title?.value,
+      description: body.description?.value,
+      price: Number(body.price?.value),
+      tag: body.tag?.value,
+    });
+
+    return this.serviceService.update(id, validatedData, image);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.serviceService.remove(id);
